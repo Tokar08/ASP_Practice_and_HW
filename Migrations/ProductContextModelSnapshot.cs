@@ -96,9 +96,14 @@ namespace APITest.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Products");
 
@@ -109,7 +114,8 @@ namespace APITest.Migrations
                             CategoryId = 6,
                             Description = "Description1",
                             Name = "Product1",
-                            Price = 10.0
+                            Price = 10.0,
+                            UserId = 1
                         },
                         new
                         {
@@ -117,7 +123,8 @@ namespace APITest.Migrations
                             CategoryId = 2,
                             Description = "Description2",
                             Name = "Product2",
-                            Price = 20.0
+                            Price = 20.0,
+                            UserId = 2
                         },
                         new
                         {
@@ -125,7 +132,8 @@ namespace APITest.Migrations
                             CategoryId = 1,
                             Description = "Description3",
                             Name = "Product3",
-                            Price = 30.0
+                            Price = 30.0,
+                            UserId = 3
                         },
                         new
                         {
@@ -133,7 +141,8 @@ namespace APITest.Migrations
                             CategoryId = 5,
                             Description = "Description4",
                             Name = "Product4",
-                            Price = 40.0
+                            Price = 40.0,
+                            UserId = 4
                         },
                         new
                         {
@@ -141,7 +150,8 @@ namespace APITest.Migrations
                             CategoryId = 5,
                             Description = "Description5",
                             Name = "Product5",
-                            Price = 50.0
+                            Price = 50.0,
+                            UserId = 5
                         },
                         new
                         {
@@ -149,7 +159,8 @@ namespace APITest.Migrations
                             CategoryId = 6,
                             Description = "Description6",
                             Name = "Product6",
-                            Price = 60.0
+                            Price = 60.0,
+                            UserId = 5
                         },
                         new
                         {
@@ -157,7 +168,8 @@ namespace APITest.Migrations
                             CategoryId = 5,
                             Description = "Description7",
                             Name = "Product7",
-                            Price = 70.0
+                            Price = 70.0,
+                            UserId = 3
                         },
                         new
                         {
@@ -165,7 +177,8 @@ namespace APITest.Migrations
                             CategoryId = 1,
                             Description = "Description8",
                             Name = "Product8",
-                            Price = 80.0
+                            Price = 80.0,
+                            UserId = 4
                         },
                         new
                         {
@@ -173,7 +186,8 @@ namespace APITest.Migrations
                             CategoryId = 2,
                             Description = "Description9",
                             Name = "Product9",
-                            Price = 90.0
+                            Price = 90.0,
+                            UserId = 1
                         },
                         new
                         {
@@ -181,7 +195,78 @@ namespace APITest.Migrations
                             CategoryId = 1,
                             Description = "Description10",
                             Name = "Product10",
-                            Price = 100.0
+                            Price = 100.0,
+                            UserId = 3
+                        });
+                });
+
+            modelBuilder.Entity("APITest.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Age")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Age = 25,
+                            Email = "user1@example.com",
+                            FirstName = "UserFirstName1",
+                            LastName = "UserLastName1"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Age = 30,
+                            Email = "user2@example.com",
+                            FirstName = "UserFirstName2",
+                            LastName = "UserLastName2"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Age = 35,
+                            Email = "user3@example.com",
+                            FirstName = "UserFirstName3",
+                            LastName = "UserLastName3"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Age = 40,
+                            Email = "user4@example.com",
+                            FirstName = "UserFirstName4",
+                            LastName = "UserLastName4"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Age = 45,
+                            Email = "user5@example.com",
+                            FirstName = "UserFirstName5",
+                            LastName = "UserLastName5"
                         });
                 });
 
@@ -193,10 +278,23 @@ namespace APITest.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("APITest.Models.User", "User")
+                        .WithMany("Products")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("APITest.Models.Category", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("APITest.Models.User", b =>
                 {
                     b.Navigation("Products");
                 });

@@ -21,7 +21,10 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var products = await _context.Products.Include(p => p.Category).ToListAsync();
+            var products = await _context.Products
+                                        .Include(p => p.Category)
+                                        .Include(p => p.User)
+                                        .ToListAsync();
             return Ok(products);
         }
         catch (Exception)
@@ -36,6 +39,9 @@ public class ProductsController : ControllerBase
     {
         try
         {
+            var user = await _context.Users.FindAsync(product.UserId);
+            if (user == null) return BadRequest("Пользователей не найден!");
+            
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
             return Created($"api/products/{product.Id}", product);
@@ -50,7 +56,10 @@ public class ProductsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> RemoveProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products
+                            .Include(p => p.User)
+                            .FirstOrDefaultAsync(p => p.Id == id);
+        
         if (product == null) return NotFound("Продукт не найден!");
 
         try
@@ -69,7 +78,10 @@ public class ProductsController : ControllerBase
     [HttpPut("{id}/price")]
     public async Task<ActionResult> UpdateProductPrice(int id, [FromBody] double newPrice)
     {
-        var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == id);
+        
         if (product == null) return NotFound("Продукт не найден!");
 
         try
@@ -94,8 +106,14 @@ public class ProductsController : ControllerBase
         try
         {
             var products = sortOrder == "asc"
-                ? await _context.Products.OrderBy(p => p.Price).Include(p => p.Category).ToListAsync()
-                : await _context.Products.OrderByDescending(p => p.Price).Include(p => p.Category).ToListAsync();
+                ? await _context.Products.OrderBy(p => p.Price)
+                    .Include(p => p.Category)
+                    .Include(p => p.User)
+                    .ToListAsync()
+                : await _context.Products.OrderByDescending(p => p.Price)
+                    .Include(p => p.Category)
+                    .Include(p => p.User)
+                    .ToListAsync();
 
             return Ok(products);
         }
@@ -107,13 +125,16 @@ public class ProductsController : ControllerBase
 
     //delete many products by ids
     [HttpDelete("delete-many")]
-    public async Task<ActionResult> DeleteManyProducts([FromBody] int[] ids)
+    public async Task<ActionResult> DeleteManyProducts([FromBody] IEnumerable<int> ids)
     {
-        if (ids.Length == 0) return BadRequest("Список идентификаторов продуктов пуст");
-
+        if (!ids.Any()) return BadRequest("Список идентификаторов продуктов пуст");
+        
         try
         {
-            var products = await _context.Products.Where(p => ids.Contains(p.Id)).ToListAsync();
+            var products = await _context.Products
+                                      .Where(p => ids.Contains(p.Id))
+                                      .ToListAsync();
+            
             _context.Products.RemoveRange(products);
             await _context.SaveChangesAsync();
             return NoContent();
@@ -132,7 +153,9 @@ public class ProductsController : ControllerBase
 
         try
         {
-            var product = await _context.Products.FirstOrDefaultAsync(p => p.Description.Contains(description));
+            var product = await _context.Products
+                          .Include(p => p.User)
+                          .FirstOrDefaultAsync(p => p.Description.Contains(description));
             if (product == null) return NotFound("Продукт с таким описанием не найден!");
             return Ok(product);
         }
